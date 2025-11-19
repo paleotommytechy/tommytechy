@@ -702,7 +702,7 @@ const App = () => {
       </main>
 
       <footer className="relative z-10 py-8 text-center text-gray-600 text-sm">
-        <p>© {new Date().getFullYear()} Olusegun Ifetomiwa. Crafted with <span className="text-red-500">♥</span> & Clay.</p>
+        <p>© {new Date().getFullYear()} Olusegun Ifetomiwa.</p>
       </footer>
     </div>
   );
