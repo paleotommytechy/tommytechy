@@ -79,6 +79,7 @@ const services = [
 const skills = {
   frontend: ["React", "HTML5", "CSS3", "Tailwind CSS", "Bootstrap", "JavaScript/TS"],
   backend: ["Django", "Python", "Node.js Basics"],
+  embedded: ["Arduino Kit", "Arduino IDE", "Proteus", "Logisim", "Raspberry Pi"],
   tools: ["Git", "GitHub", "Supabase", "VS Code", "Figma"],
   soft: ["Communication", "Teamwork", "Problem Solving", "Adaptability"]
 };
@@ -294,6 +295,7 @@ const AboutPage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Frontend */}
               <div className="clay-card p-6">
                 <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Frontend</h4>
                 <div className="flex flex-wrap gap-2">
@@ -302,12 +304,31 @@ const AboutPage = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Backend */}
               <div className="clay-card p-6">
-                <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Backend & Cloud</h4>
+                <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Backend</h4>
                 <div className="flex flex-wrap gap-2">
                   {skills.backend.map(s => (
                     <span key={s} className="px-3 py-1 bg-[#1a1b1e] shadow-[inset_3px_3px_6px_#121315,inset_-3px_-3px_6px_#222327] rounded-full text-xs text-gray-300">{s}</span>
                   ))}
+                </div>
+              </div>
+
+              {/* Embedded Systems */}
+              <div className="clay-card p-6">
+                <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Embedded Systems</h4>
+                <div className="flex flex-wrap gap-2">
+                  {skills.embedded.map(s => (
+                    <span key={s} className="px-3 py-1 bg-[#1a1b1e] shadow-[inset_3px_3px_6px_#121315,inset_-3px_-3px_6px_#222327] rounded-full text-xs text-gray-300">{s}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tools & Cloud */}
+              <div className="clay-card p-6">
+                <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Tools & Cloud</h4>
+                <div className="flex flex-wrap gap-2">
                   {skills.tools.map(s => (
                     <span key={s} className="px-3 py-1 bg-[#1a1b1e] shadow-[inset_3px_3px_6px_#121315,inset_-3px_-3px_6px_#222327] rounded-full text-xs text-gray-300">{s}</span>
                   ))}
@@ -315,6 +336,7 @@ const AboutPage = () => {
               </div>
             </div>
             
+            {/* Soft Skills */}
             <div className="clay-card p-6">
                 <h4 className="text-[#00ffff] font-bold mb-4 border-b border-gray-700 pb-2">Soft Skills</h4>
                 <div className="flex flex-wrap gap-3">
