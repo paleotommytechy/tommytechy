@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Olusegun Ifetomiwa | Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #1a1b1e;
+        color: #e0e0e0;
+        font-family: 'Nunito', sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* Dark Claymorphism Utilities */
+      .clay-card {
+        background-color: #1a1b1e;
+        border-radius: 2rem;
+        box-shadow: 
+          12px 12px 24px #121315, 
+          -12px -12px 24px #222327,
+          inset 2px 2px 4px rgba(255, 255, 255, 0.05),
+          inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .clay-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+          16px 16px 32px #121315, 
+          -16px -16px 32px #222327,
+          inset 2px 2px 4px rgba(255, 255, 255, 0.05),
+          inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .clay-btn {
+        background-color: #1a1b1e;
+        border-radius: 9999px; /* Pill shape */
+        box-shadow: 
+          8px 8px 16px #121315, 
+          -8px -8px 16px #222327;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .clay-btn:active {
+        transform: scale(0.95);
+        box-shadow: 
+          inset 4px 4px 8px #121315, 
+          inset -4px -4px 8px #222327;
+      }
+
+      .clay-btn-primary {
+        background-color: #1a1b1e;
+        color: #00ffff;
+        border: 2px solid transparent;
+      }
+      
+      .clay-btn-accent {
+        background: #00ffff;
+        color: #1a1b1e;
+        box-shadow: 
+          8px 8px 16px rgba(0, 0, 0, 0.3), 
+          -8px -8px 16px rgba(30, 40, 40, 0.5),
+          inset 4px 4px 8px rgba(255, 255, 255, 0.4),
+          inset -4px -4px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .clay-btn-accent:hover {
+        filter: brightness(1.1);
+        box-shadow: 
+          10px 10px 20px rgba(0, 0, 0, 0.3), 
+          -10px -10px 20px rgba(30, 40, 40, 0.5),
+          inset 4px 4px 8px rgba(255, 255, 255, 0.4),
+          inset -4px -4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .clay-btn-accent:active {
+        box-shadow: 
+          inset 4px 4px 8px rgba(0, 100, 100, 0.3),
+          inset -4px -4px 8px rgba(255, 255, 255, 0.5);
+      }
+
+      .clay-input {
+        background-color: #1a1b1e;
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 
+          inset 6px 6px 12px #121315, 
+          inset -6px -6px 12px #222327;
+        color: #e0e0e0;
+        outline: none;
+        transition: box-shadow 0.2s ease;
+      }
+
+      .clay-input:focus {
+        box-shadow: 
+          inset 8px 8px 16px #0f1012, 
+          inset -8px -8px 16px #25272b,
+          0 0 0 2px #00ffff; /* Aqua focus ring */
+      }
+
+      .text-glow {
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+      }
+      
+      .blob {
+        position: absolute;
+        filter: blur(80px);
+        z-index: -1;
+        opacity: 0.4;
+        animation: float 10s infinite ease-in-out;
+      }
+
+      @keyframes float {
+        0% { transform: translate(0, 0); }
+        50% { transform: translate(20px, -20px); }
+        100% { transform: translate(0, 0); }
+      }
+
+      /* 3D Tilt effect wrapper */
+      .tilt-card-container {
+        perspective: 1000px;
+      }
+      .tilt-card-inner {
+        transition: transform 0.1s;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
