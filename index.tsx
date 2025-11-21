@@ -22,12 +22,15 @@ import {
   Settings,
   PlusCircle,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Quote, // Added for testimonials icon
+  MessageSquare // Added MessageSquare
 } from "lucide-react";
+import TestimonialsPage from './src/testimonials'; // Import TestimonialsPage
 
 // --- Types ---
 
-type Section = "home" | "about" | "services" | "casestudies" | "work" | "contact" | "admin";
+type Section = "home" | "about" | "services" | "casestudies" | "work" | "testimonials" | "contact" | "admin"; // Added "testimonials"
 
 interface Project {
   id: number;
@@ -36,6 +39,14 @@ interface Project {
   description: string;
   image: string;
   tech: string[];
+}
+
+interface Testimonial {
+  id: number;
+  name: string;
+  title: string; // Added title property
+  text: string;
+  avatar?: string;
 }
 
 // --- Mock Data ---
@@ -67,6 +78,12 @@ const initialProjects: Project[] = [
   }
 ];
 
+const initialTestimonials: Testimonial[] = [
+  { id: 1, name: "Alice Wonderland", title: "CEO, InnovateX", text: "Amazing work, very professional!", avatar: "https://i.pravatar.cc/150?img=1" },
+  { id: 2, name: "Bob The Builder", title: "Project Manager, Construct Co.", text: "Highly recommend for any project.", avatar: "https://i.pravatar.cc/150?img=2" },
+  { id: 3, name: "Charlie Chaplin", title: "CTO, Tech Solutions", text: "Exceptional creativity and technical skill.", avatar: "https://i.pravatar.cc/150?img=3" },
+];
+
 const services = [
   { title: "Frontend Dev", icon: <Layout className="w-8 h-8" />, desc: "Building responsive, interactive, and accessible interfaces using React and Tailwind." },
   { title: "Backend Dev", icon: <Database className="w-8 h-8" />, desc: "Upcoming expertise in Django and server-side logic for robust applications." },
@@ -95,6 +112,7 @@ const Navigation = ({ activeSection, setSection }: { activeSection: Section, set
     { id: "services", label: "Services", icon: <Briefcase size={18} /> },
     { id: "casestudies", label: "Case Studies", icon: <Code size={18} /> },
     { id: "work", label: "Gallery", icon: <Layers size={18} /> },
+    { id: "testimonials", label: "Testimonials", icon: <Quote size={18} /> }, // Added Testimonials item
     { id: "contact", label: "Contact", icon: <Mail size={18} /> },
   ];
 
@@ -284,7 +302,7 @@ const AboutPage = () => {
             <div className="clay-card p-8 relative overflow-hidden">
                <div className="absolute top-0 right-0 w-20 h-20 bg-[#00ffff] opacity-5 rounded-bl-full"></div>
                <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                 <Terminal className="text-[#00ffff]" /> What I Do
+                 <Terminal className="text-[#00ffff}" /> What I Do
                </h3>
                <p className="text-gray-300 leading-relaxed mb-4">
                  I am currently mastering the art of <strong>Frontend Development</strong> while exploring the depths of <strong>Embedded Systems</strong>. My journey is evolving towards becoming a robust <strong>Backend Engineer</strong>, creating a full circle of competence from silicon to screen.
@@ -582,26 +600,479 @@ const ContactPage = () => {
   );
 };
 
+interface ProjectAdminProps {
+  projects: Project[];
+  addProject: (title: string, category: string, description: string, image: string, tech: string[]) => void;
+  editProject: (id: number, newTitle: string, newCategory: string, newDescription: string, newImage: string, newTech: string[]) => void;
+  deleteProject: (id: number) => void;
+  isCaseStudy?: boolean; // New prop to differentiate
+}
+
+const WorkGalleryAdmin = ({ projects, addProject, editProject, deleteProject }: ProjectAdminProps) => {
+  const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newProjectCategory, setNewProjectCategory] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [newProjectImage, setNewProjectImage] = useState("");
+  const [newProjectTech, setNewProjectTech] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleAddProject = () => {
+    if (newProjectTitle.trim() && newProjectCategory.trim()) {
+      addProject(
+        newProjectTitle, 
+        newProjectCategory, 
+        newProjectDescription || 'Draft project description...', 
+        newProjectImage || 'https://via.placeholder.com/400', 
+        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
+      );
+      setNewProjectTitle("");
+      setNewProjectCategory("");
+      setNewProjectDescription("");
+      setNewProjectImage("");
+      setNewProjectTech("");
+    }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingId(project.id);
+    setNewProjectTitle(project.title);
+    setNewProjectCategory(project.category);
+    setNewProjectDescription(project.description);
+    setNewProjectImage(project.image);
+    setNewProjectTech(project.tech.join(', '));
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId !== null && newProjectTitle.trim() && newProjectCategory.trim()) {
+      editProject(
+        editingId, 
+        newProjectTitle, 
+        newProjectCategory, 
+        newProjectDescription, 
+        newProjectImage, 
+        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
+      );
+      setEditingId(null);
+      setNewProjectTitle("");
+      setNewProjectCategory("");
+      setNewProjectDescription("");
+      setNewProjectImage("");
+      setNewProjectTech("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewProjectTitle("");
+    setNewProjectCategory("");
+    setNewProjectDescription("");
+    setNewProjectImage("");
+    setNewProjectTech("");
+  };
+
+  return (
+    <div className="clay-card p-6 mb-8">
+      <h4 className="text-xl font-bold text-white mb-4">Manage Work Gallery Projects</h4>
+      <div className="space-y-4">
+        {projects.map(p => (
+          <div key={p.id} className="flex justify-between items-center clay-card p-3">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden">
+                <img src={p.image} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div className="text-white font-bold">{p.title}</div>
+                <div className="text-xs text-gray-500">@{p.category}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEditProject(p)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
+                <Settings size={18} />
+              </button>
+              <button onClick={() => deleteProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex flex-col gap-3">
+        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Project" : "Add New Project"}</h5>
+        <input 
+          type="text" 
+          placeholder="Project Title" 
+          className="clay-input p-3"
+          value={newProjectTitle}
+          onChange={(e) => setNewProjectTitle(e.target.value)}
+        />
+        <input 
+          type="text" 
+          placeholder="Category" 
+          className="clay-input p-3"
+          value={newProjectCategory}
+          onChange={(e) => setNewProjectCategory(e.target.value)}
+        />
+        <textarea 
+          placeholder="Description" 
+          className="clay-input p-3 h-24 resize-none"
+          value={newProjectDescription}
+          onChange={(e) => setNewProjectDescription(e.target.value)}
+        ></textarea>
+        <input 
+          type="text" 
+          placeholder="Image URL" 
+          className="clay-input p-3"
+          value={newProjectImage}
+          onChange={(e) => setNewProjectImage(e.target.value)}
+        />
+        <input 
+          type="text" 
+          placeholder="Technologies (comma-separated)" 
+          className="clay-input p-3"
+          value={newProjectTech}
+          onChange={(e) => setNewProjectTech(e.target.value)}
+        />
+        {editingId ? (
+          <div className="flex gap-2">
+            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
+              <PlusCircle size={20} /> Save Changes
+            </button>
+            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleAddProject} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
+            <PlusCircle size={20} /> Add Project
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const CaseStudiesAdmin = ({ projects, addProject, editProject, deleteProject }: ProjectAdminProps) => {
+  const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newProjectCategory, setNewProjectCategory] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [newProjectImage, setNewProjectImage] = useState("");
+  const [newProjectTech, setNewProjectTech] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleAddProject = () => {
+    if (newProjectTitle.trim() && newProjectCategory.trim()) {
+      addProject(
+        newProjectTitle, 
+        newProjectCategory, 
+        newProjectDescription || 'Draft case study description...', 
+        newProjectImage || 'https://via.placeholder.com/400', 
+        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
+      );
+      setNewProjectTitle("");
+      setNewProjectCategory("");
+      setNewProjectDescription("");
+      setNewProjectImage("");
+      setNewProjectTech("");
+    }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingId(project.id);
+    setNewProjectTitle(project.title);
+    setNewProjectCategory(project.category);
+    setNewProjectDescription(project.description);
+    setNewProjectImage(project.image);
+    setNewProjectTech(project.tech.join(', '));
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId !== null && newProjectTitle.trim() && newProjectCategory.trim()) {
+      editProject(
+        editingId, 
+        newProjectTitle, 
+        newProjectCategory, 
+        newProjectDescription, 
+        newProjectImage, 
+        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
+      );
+      setEditingId(null);
+      setNewProjectTitle("");
+      setNewProjectCategory("");
+      setNewProjectDescription("");
+      setNewProjectImage("");
+      setNewProjectTech("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewProjectTitle("");
+    setNewProjectCategory("");
+    setNewProjectDescription("");
+    setNewProjectImage("");
+    setNewProjectTech("");
+  };
+
+  return (
+    <div className="clay-card p-6 mb-8">
+      <h4 className="text-xl font-bold text-white mb-4">Manage Case Studies</h4>
+      <div className="space-y-4">
+        {projects.map(p => (
+          <div key={p.id} className="flex justify-between items-center clay-card p-3">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden">
+                <img src={p.image} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div className="text-white font-bold">{p.title}</div>
+                <div className="text-xs text-gray-500">@{p.category}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEditProject(p)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
+                <Settings size={18} />
+              </button>
+              <button onClick={() => deleteProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex flex-col gap-3">
+        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Case Study" : "Add New Case Study"}</h5>
+        <input 
+          type="text" 
+          placeholder="Case Study Title" 
+          className="clay-input p-3"
+          value={newProjectTitle}
+          onChange={(e) => setNewProjectTitle(e.target.value)}
+        />
+        <input 
+          type="text" 
+          placeholder="Category" 
+          className="clay-input p-3"
+          value={newProjectCategory}
+          onChange={(e) => setNewProjectCategory(e.target.value)}
+        />
+        <textarea 
+          placeholder="Description" 
+          className="clay-input p-3 h-24 resize-none"
+          value={newProjectDescription}
+          onChange={(e) => setNewProjectDescription(e.target.value)}
+        ></textarea>
+        <input 
+          type="text" 
+          placeholder="Image URL" 
+          className="clay-input p-3"
+          value={newProjectImage}
+          onChange={(e) => setNewProjectImage(e.target.value)}
+        />
+        <input 
+          type="text" 
+          placeholder="Technologies (comma-separated)" 
+          className="clay-input p-3"
+          value={newProjectTech}
+          onChange={(e) => setNewProjectTech(e.target.value)}
+        />
+        {editingId ? (
+          <div className="flex gap-2">
+            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
+              <PlusCircle size={20} /> Save Changes
+            </button>
+            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleAddProject} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
+            <PlusCircle size={20} /> Add Case Study
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+interface TestimonialsAdminProps {
+  testimonials: Testimonial[];
+  addTestimonial: (name: string, title: string, text: string, avatar?: string) => void;
+  editTestimonial: (id: number, newName: string, newTitle: string, newText: string, newAvatar?: string) => void;
+  deleteTestimonial: (id: number) => void;
+}
+
+const TestimonialsAdmin = ({ testimonials, addTestimonial, editTestimonial, deleteTestimonial }: TestimonialsAdminProps) => {
+  const [newTestimonialName, setNewTestimonialName] = useState("");
+  const [newTestimonialTitle, setNewTestimonialTitle] = useState("");
+  const [newTestimonialText, setNewTestimonialText] = useState("");
+  const [newTestimonialAvatar, setNewTestimonialAvatar] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleAddTestimonial = () => {
+    if (newTestimonialName.trim() && newTestimonialTitle.trim() && newTestimonialText.trim()) {
+      addTestimonial(newTestimonialName, newTestimonialTitle, newTestimonialText, newTestimonialAvatar || undefined);
+      setNewTestimonialName("");
+      setNewTestimonialTitle("");
+      setNewTestimonialText("");
+      setNewTestimonialAvatar("");
+    }
+  };
+
+  const handleEditTestimonial = (testimonial: Testimonial) => {
+    setEditingId(testimonial.id);
+    setNewTestimonialName(testimonial.name);
+    setNewTestimonialTitle(testimonial.title);
+    setNewTestimonialText(testimonial.text);
+    setNewTestimonialAvatar(testimonial.avatar || "");
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId !== null && newTestimonialName.trim() && newTestimonialTitle.trim() && newTestimonialText.trim()) {
+      editTestimonial(editingId, newTestimonialName, newTestimonialTitle, newTestimonialText, newTestimonialAvatar || undefined);
+      setEditingId(null);
+      setNewTestimonialName("");
+      setNewTestimonialTitle("");
+      setNewTestimonialText("");
+      setNewTestimonialAvatar("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewTestimonialName("");
+    setNewTestimonialTitle("");
+    setNewTestimonialText("");
+    setNewTestimonialAvatar("");
+  };
+
+  return (
+    <div className="clay-card p-6 mb-8">
+      <h4 className="text-xl font-bold text-white mb-4">Manage Testimonials</h4>
+      <div className="space-y-4">
+        {testimonials.map(t => (
+          <div key={t.id} className="flex justify-between items-center clay-card p-3">
+            <div>
+              <p className="text-white font-medium">{t.name} - <span className="text-gray-500">{t.title}</span></p>
+              <p className="text-gray-400 text-sm italic">"{t.text}"</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEditTestimonial(t)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
+                <Settings size={18} />
+              </button>
+              <button onClick={() => deleteTestimonial(t.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex flex-col gap-3">
+        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Testimonial" : "Add New Testimonial"}</h5>
+        <input 
+          type="text" 
+          placeholder="Testimonial Name" 
+          className="clay-input p-3"
+          value={newTestimonialName}
+          onChange={(e) => setNewTestimonialName(e.target.value)}
+        />
+        <input 
+          type="text" 
+          placeholder="Testimonial Title (e.g., CEO, Company)" 
+          className="clay-input p-3"
+          value={newTestimonialTitle}
+          onChange={(e) => setNewTestimonialTitle(e.target.value)}
+        />
+        <textarea 
+          placeholder="Testimonial Text" 
+          className="clay-input p-3 h-24 resize-none"
+          value={newTestimonialText}
+          onChange={(e) => setNewTestimonialText(e.target.value)}
+        ></textarea>
+        <input 
+          type="text" 
+          placeholder="Avatar URL (optional)" 
+          className="clay-input p-3"
+          value={newTestimonialAvatar}
+          onChange={(e) => setNewTestimonialAvatar(e.target.value)}
+        />
+        {editingId ? (
+          <div className="flex gap-2">
+            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
+              <PlusCircle size={20} /> Save Changes
+            </button>
+            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleAddTestimonial} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
+            <PlusCircle size={20} /> Add Testimonial
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+const AdminPanel = () => {
+  return (
+    <div className="min-h-screen pt-32 pb-20 px-6">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-bold text-white mb-8 text-center">Admin Panel</h2>
+        <div className="text-gray-400 text-center mb-12">Manage your website content here.</div>
+
+        {/* WorkGalleryAdmin and CaseStudiesAdmin are rendered inside AdminDashboard now */}
+        {/* TestimonialsAdmin is rendered inside AdminDashboard now */}
+        {/* Add more admin sections as needed */}
+      </div>
+    </div>
+  );
+};
+
+
 const AdminDashboard = () => {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [newProject, setNewProject] = useState({ title: '', category: '' });
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials); // New state for testimonials
+  const [activeAdminTab, setActiveAdminTab] = useState<'projects' | 'case_studies' | 'testimonials'>('projects');
 
-  const addProject = () => {
-    if(!newProject.title) return;
+  const addProject = (title: string, category: string, description: string, image: string, tech: string[]) => {
     setProjects([...projects, {
       id: Date.now(),
-      title: newProject.title,
-      category: newProject.category || 'Uncategorized',
-      description: 'Draft project description...',
-      image: 'https://via.placeholder.com/400',
-      tech: ['React']
+      title,
+      category,
+      description,
+      image,
+      tech
     }]);
-    setNewProject({ title: '', category: '' });
   };
 
-  const removeProject = (id: number) => {
+  const editProject = (id: number, newTitle: string, newCategory: string, newDescription: string, newImage: string, newTech: string[]) => {
+    setProjects(projects.map(p => 
+      p.id === id ? { ...p, title: newTitle, category: newCategory, description: newDescription, image: newImage, tech: newTech } : p
+    ));
+  };
+
+  const deleteProject = (id: number) => {
     setProjects(projects.filter(p => p.id !== id));
   };
+
+  // Testimonial management functions
+  const addTestimonial = (name: string, title: string, text: string, avatar?: string) => {
+    setTestimonials([...testimonials, { id: Date.now(), name, title, text, avatar }]);
+  };
+
+  const editTestimonial = (id: number, newName: string, newTitle: string, newText: string, newAvatar?: string) => {
+    setTestimonials(testimonials.map(t => 
+      t.id === id ? { ...t, name: newName, title: newTitle, text: newText, avatar: newAvatar } : t
+    ));
+  };
+
+  const deleteTestimonial = (id: number) => {
+    setTestimonials(testimonials.filter(t => t.id !== id));
+  };
+
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-6">
@@ -618,8 +1089,8 @@ const AdminDashboard = () => {
               <div className="text-gray-400 text-sm">Active Projects</div>
             </div>
             <div className="clay-card p-6 text-center">
-              <div className="text-4xl font-bold text-green-400 mb-2">12</div>
-              <div className="text-gray-400 text-sm">Messages</div>
+              <div className="text-4xl font-bold text-green-400 mb-2">{testimonials.length}</div>
+              <div className="text-gray-400 text-sm">Active Testimonials</div>
             </div>
              <div className="clay-card p-6 text-center">
               <div className="text-4xl font-bold text-purple-400 mb-2">854</div>
@@ -628,53 +1099,61 @@ const AdminDashboard = () => {
           </div>
 
           <div className="mt-12">
-            <h3 className="text-xl font-bold text-white mb-6">Project Management</h3>
+            <h3 className="text-xl font-bold text-white mb-6">Content Management</h3>
             
-            {/* Add New */}
-            <div className="clay-card p-6 mb-8 flex flex-col md:flex-row gap-4">
-               <input 
-                  type="text" 
-                  placeholder="Project Title" 
-                  className="clay-input p-3 flex-1"
-                  value={newProject.title}
-                  onChange={(e) => setNewProject({...newProject, title: e.target.value})}
-                />
-                <input 
-                  type="text" 
-                  placeholder="Category" 
-                  className="clay-input p-3 flex-1"
-                  value={newProject.category}
-                  onChange={(e) => setNewProject({...newProject, category: e.target.value})}
-                />
-               <button onClick={addProject} className="clay-btn-accent px-6 py-3 rounded-xl">
-                 <PlusCircle size={20} />
-               </button>
+            <div className="flex space-x-4 mb-8">
+              <button
+                onClick={() => setActiveAdminTab('projects')}
+                className={`clay-btn px-6 py-2 ${activeAdminTab === 'projects' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
+              >
+                Work Gallery
+              </button>
+              <button
+                onClick={() => setActiveAdminTab('case_studies')}
+                className={`clay-btn px-6 py-2 ${activeAdminTab === 'case_studies' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
+              >
+                Case Studies
+              </button>
+              <button
+                onClick={() => setActiveAdminTab('testimonials')}
+                className={`clay-btn px-6 py-2 ${activeAdminTab === 'testimonials' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
+              >
+                Testimonials
+              </button>
             </div>
 
-            {/* List */}
-            <div className="space-y-4">
-              {projects.map(p => (
-                <div key={p.id} className="clay-card p-4 flex justify-between items-center">
-                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden">
-                       <img src={p.image} alt="" className="w-full h-full object-cover" />
-                     </div>
-                     <div>
-                       <div className="text-white font-bold">{p.title}</div>
-                       <div className="text-xs text-gray-500">{p.category}</div>
-                     </div>
-                   </div>
-                   <button onClick={() => removeProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
-                     <Trash2 size={18} />
-                   </button>
-                </div>
-              ))}
-            </div>
+            {activeAdminTab === 'projects' && (
+              <WorkGalleryAdmin 
+                projects={projects}
+                addProject={addProject}
+                editProject={editProject}
+                deleteProject={deleteProject}
+              />
+            )}
+
+            {activeAdminTab === 'case_studies' && 
+              <CaseStudiesAdmin 
+                projects={projects} // Assuming case studies are also of type Project[]
+                addProject={addProject}
+                editProject={editProject}
+                deleteProject={deleteProject}
+              />
+            }
+            {activeAdminTab === 'testimonials' && 
+              <TestimonialsAdmin 
+                testimonials={testimonials}
+                addTestimonial={addTestimonial}
+                editTestimonial={editTestimonial}
+                deleteTestimonial={deleteTestimonial}
+              />
+            }
+
           </div>
        </div>
     </div>
   );
 };
+
 
 // --- Main App ---
 
@@ -697,8 +1176,9 @@ const App = () => {
         {activeSection === "services" && <ServicesPage />}
         {activeSection === "casestudies" && <CaseStudiesPage />}
         {activeSection === "work" && <WorkGallery />}
+        {activeSection === "testimonials" && <TestimonialsPage />} {/* Render TestimonialsPage */}
         {activeSection === "contact" && <ContactPage />}
-        {activeSection === "admin" && <AdminDashboard />}
+        {activeSection === "admin" && <AdminDashboard />} {/* Render AdminDashboard */}
       </main>
 
       <footer className="relative z-10 py-8 text-center text-gray-600 text-sm">
