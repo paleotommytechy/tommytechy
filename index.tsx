@@ -250,7 +250,7 @@ const HomePage = ({ setSection }: { setSection: (s: Section) => void }) => {
             <div className="relative z-10 w-full h-full flex items-center justify-center">
               <div className="clay-card w-64 h-64 lg:w-96 lg:h-96 rounded-full overflow-hidden border-4 border-[#1a1b1e] flex items-center justify-center bg-[#25262a]">
                  <img 
-                  src="https://accfikolewebsite.vercel.app/assets/ifeoluwa-BRr-DXfF.jpg" 
+                  src="/profile.jpeg" 
                   alt="Olusegun Ifeoluwa" 
                   className="w-full h-full object-cover" 
                 />
@@ -279,7 +279,7 @@ const AboutPage = () => {
               <div className="absolute bottom-0 w-full h-12 bg-[#1a1b1e] shadow-[0_10px_20px_rgba(0,0,0,0.5),inset_0_2px_5px_rgba(255,255,255,0.1)] rounded-[100%] z-0"></div>
               <div className="absolute bottom-8 inset-x-4 top-4 clay-card flex items-center justify-center z-10 overflow-hidden bg-gray-800">
                 <img 
-                  src="https://accfikolewebsite.vercel.app/assets/ifeoluwa-BRr-DXfF.jpg" 
+                  src="/profile.jpeg" 
                   alt="Olusegun Ifeoluwa" 
                   className="w-full h-full object-cover" 
                 />
@@ -290,7 +290,7 @@ const AboutPage = () => {
             </div>
             
             <div className="clay-card p-6 w-full text-center space-y-4">
-              <h3 className="text-xl font-bold text-white">Olusegun Ifetomiwa</h3>
+              <h3 className="text-xl font-bold text-white">Olusegun Ifeoluwa Tomiwa</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
                 A Computer Engineering Student driven by the fusion of hardware logic and software beauty.
               </p>
