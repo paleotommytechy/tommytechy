@@ -6,6 +6,7 @@ export interface Testimonial {
   quote: string;
   author: string;
   company: string;
+  avatar?: string;
 }
 
 export const getTestimonials = async (): Promise<Testimonial[]> => {
@@ -14,5 +15,11 @@ export const getTestimonials = async (): Promise<Testimonial[]> => {
     console.error('Error fetching testimonials:', error);
     return [];
   }
-  return data as Testimonial[];
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    quote: row.quote,
+    author: row.author,
+    company: row.company,
+    avatar: row.avatar_url || ''
+  })) as Testimonial[];
 };

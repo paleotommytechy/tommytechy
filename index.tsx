@@ -27,6 +27,19 @@ import {
   MessageSquare // Added MessageSquare
 } from "lucide-react";
 import TestimonialsPage from './src/testimonials'; // Import TestimonialsPage
+import AdminDashboard from './src/admin'; // Import new Admin Dashboard
+import LoginPage from './src/login';
+import { supabase } from './lib/supabase';
+import { getServices } from './lib/services';
+import { getGalleryProjects } from './lib/gallery';
+import { getCaseStudies } from './lib/caseStudies';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation
+} from 'react-router-dom';
 
 // --- Types ---
 
@@ -103,25 +116,41 @@ const skills = {
 
 // --- Components ---
 
-const Navigation = ({ activeSection, setSection }: { activeSection: Section, setSection: (s: Section) => void }) => {
+const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const navItems: { id: Section; label: string; icon: React.ReactNode }[] = [
-    { id: "home", label: "Home", icon: <Home size={18} /> },
-    { id: "about", label: "About", icon: <User size={18} /> },
-    { id: "services", label: "Services", icon: <Briefcase size={18} /> },
-    { id: "casestudies", label: "Case Studies", icon: <Code size={18} /> },
-    { id: "work", label: "Gallery", icon: <Layers size={18} /> },
-    { id: "testimonials", label: "Testimonials", icon: <Quote size={18} /> }, // Added Testimonials item
-    { id: "contact", label: "Contact", icon: <Mail size={18} /> },
-  ];
+  const pathToSection = (path: string): Section => {
+    if (path === '/' || path === '') return 'home';
+    if (path.startsWith('/about')) return 'about';
+    if (path.startsWith('/services')) return 'services';
+    if (path.startsWith('/case-studies') || path.startsWith('/casestudies')) return 'casestudies';
+    if (path.startsWith('/work')) return 'work';
+    if (path.startsWith('/testimonials')) return 'testimonials';
+    if (path.startsWith('/contact')) return 'contact';
+    if (path.startsWith('/admin')) return 'admin';
+    return 'home';
+  };
+
+  const activeSection = pathToSection(location.pathname);
+
+  const [navItems] = useState<{ id: Section; label: string; icon: React.ReactNode }[]>([
+    { id: 'home', label: 'Home', icon: <Home size={18} /> },
+    { id: 'about', label: 'About', icon: <User size={18} /> },
+    { id: 'services', label: 'Services', icon: <Briefcase size={18} /> },
+    { id: 'casestudies', label: 'Case Studies', icon: <Code size={18} /> },
+    { id: 'work', label: 'Gallery', icon: <Layers size={18} /> },
+    { id: 'testimonials', label: 'Testimonials', icon: <Quote size={18} /> },
+    { id: 'contact', label: 'Contact', icon: <Mail size={18} /> },
+  ]);
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div 
           className="text-2xl font-extrabold text-white tracking-tight cursor-pointer flex items-center gap-2"
-          onClick={() => setSection("home")}
+          onClick={() => navigate('/')}
         >
           <span className="text-aqua text-shadow-glow text-[#00ffff]">Tommytechy.</span>
         </div>
@@ -131,7 +160,7 @@ const Navigation = ({ activeSection, setSection }: { activeSection: Section, set
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setSection(item.id)}
+              onClick={() => navigate(item.id === 'home' ? '/' : item.id === 'casestudies' ? '/case-studies' : `/${item.id}`)}
               className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-semibold
                 ${activeSection === item.id 
                   ? "bg-[#00ffff] text-[#1a1b1e] shadow-lg shadow-[#00ffff]/20" 
@@ -158,7 +187,7 @@ const Navigation = ({ activeSection, setSection }: { activeSection: Section, set
             <button
               key={item.id}
               onClick={() => {
-                setSection(item.id);
+                navigate(item.id === 'home' ? '/' : item.id === 'casestudies' ? '/case-studies' : `/${item.id}`);
                 setIsOpen(false);
               }}
               className={`p-3 rounded-xl flex items-center gap-3 text-left font-medium
@@ -172,7 +201,7 @@ const Navigation = ({ activeSection, setSection }: { activeSection: Section, set
           ))}
            <button
               onClick={() => {
-                setSection('admin');
+                navigate('/admin');
                 setIsOpen(false);
               }}
               className="p-3 rounded-xl flex items-center gap-3 text-left font-medium text-gray-500 mt-4 border-t border-gray-800 pt-4"
@@ -198,7 +227,8 @@ const FloatingShapes = () => {
 
 // --- Sections ---
 
-const HomePage = ({ setSection }: { setSection: (s: Section) => void }) => {
+const HomePage = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen flex items-center pt-20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -217,17 +247,24 @@ const HomePage = ({ setSection }: { setSection: (s: Section) => void }) => {
           </p>
           <div className="flex gap-6 pt-4">
             <button 
-              onClick={() => setSection('contact')}
+              onClick={() => navigate('/contact')}
               className="clay-btn-accent px-8 py-4 rounded-full font-bold text-lg transition-transform hover:-translate-y-1"
             >
               Hire Me
             </button>
             <button 
-              onClick={() => setSection('work')}
+              onClick={() => navigate('/work')}
               className="clay-btn px-8 py-4 text-white hover:text-[#00ffff] transition-colors"
             >
               View Work
             </button>
+            <a
+              href="/my_cv.pdf"
+              download
+              className="clay-btn px-8 py-4 text-white hover:text-[#00ffff] transition-colors"
+            >
+              Download CV
+            </a>
           </div>
           
           <div className="grid grid-cols-3 gap-4 mt-12">
@@ -374,6 +411,26 @@ const AboutPage = () => {
 };
 
 const ServicesPage = () => {
+  const [servicesData, setServicesData] = useState<{ id: number; title: string; desc: string; icon?: string }[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      setLoadingServices(true);
+      try {
+        const data = await getServices();
+        if (mounted && data && data.length > 0) setServicesData(data.map(s => ({ id: s.id, title: s.title, desc: s.desc, icon: s.icon })));
+      } finally {
+        if (mounted) setLoadingServices(false);
+      }
+    };
+    fetch();
+    return () => { mounted = false; };
+  }, []);
+
+  const displayServices = servicesData.length > 0 ? servicesData : services;
+
   return (
     <div className="min-h-screen pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
@@ -382,25 +439,49 @@ const ServicesPage = () => {
           <p className="text-gray-400">High-quality digital solutions tailored to your needs.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, idx) => (
-            <div key={idx} className="clay-card p-8 hover:z-10 relative group">
-              <div className="w-16 h-16 rounded-2xl bg-[#1a1b1e] shadow-[inset_4px_4px_8px_#121315,inset_-4px_-4px_8px_#222327] flex items-center justify-center text-[#00ffff] mb-6 group-hover:scale-110 transition-transform duration-300">
-                {service.icon}
+        {loadingServices ? (
+          <div className="text-center text-gray-400">Loading services...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayServices.map((service: any, idx: number) => (
+              <div key={service.id ?? idx} className="clay-card p-8 hover:z-10 relative group">
+                <div className="w-16 h-16 rounded-2xl bg-[#1a1b1e] shadow-[inset_4px_4px_8px_#121315,inset_-4px_-4px_8px_#222327] flex items-center justify-center text-[#00ffff] mb-6 group-hover:scale-110 transition-transform duration-300">
+                  {/* if icon is a string (e.g., icon name), you can render conditionally here */}
+                  {service.icon ? <span className="text-sm">{service.icon}</span> : <Layout className="w-6 h-6" />}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#00ffff] transition-colors">{service.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{service.desc}</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#00ffff] transition-colors">{service.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                {service.desc}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 const CaseStudiesPage = () => {
+  const [caseStudies, setCaseStudies] = React.useState<typeof initialProjects>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const data = await getCaseStudies();
+        if (mounted) setCaseStudies(data && data.length > 0 ? data as any : initialProjects);
+      } catch (e) {
+        console.error('Failed to load case studies', e);
+        if (mounted) setCaseStudies(initialProjects);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetch();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div className="min-h-screen pt-32 pb-20 px-6">
       <div className="max-w-5xl mx-auto">
@@ -408,35 +489,61 @@ const CaseStudiesPage = () => {
           <h2 className="text-4xl font-bold text-white mb-4">Case Studies</h2>
         </div>
 
-        <div className="space-y-12">
-          {initialProjects.map((project, index) => (
-            <div key={project.id} className="clay-card p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div className={`order-1 ${index % 2 === 0 ? 'md:order-1' : 'md:order-2'} rounded-2xl overflow-hidden h-64 w-full relative bg-gray-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]`}>
-                <img src={project.image} alt={project.title} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1b1e] to-transparent opacity-60"></div>
-              </div>
-              
-              <div className={`order-2 ${index % 2 === 0 ? 'md:order-2' : 'md:order-1'} space-y-4`}>
-                <div className="text-[#00ffff] text-sm font-bold tracking-wider uppercase">{project.category}</div>
-                <h3 className="text-3xl font-bold text-white">{project.title}</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {project.description} <br/><br/>
-                  <span className="text-gray-500 text-sm italic">Problem: Creating a seamless interface. Solution: Implemented soft UI principles.</span>
-                </p>
-                
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {project.tech.map(t => (
-                    <span key={t} className="text-xs px-2 py-1 rounded border border-gray-700 text-gray-400">{t}</span>
-                  ))}
+        {loading ? (
+          <div className="text-center text-gray-400">Loading case studies...</div>
+        ) : (
+          <div className="space-y-12">
+            {caseStudies.map((project: any, index: number) => (
+              <div key={project.id || index} className="clay-card p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div className={`order-1 ${index % 2 === 0 ? 'md:order-1' : 'md:order-2'} rounded-2xl overflow-hidden h-64 w-full relative bg-gray-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]`}>
+                  <img src={project.coverImage || project.image || project.image_url} alt={project.title} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1b1e] to-transparent opacity-60"></div>
                 </div>
 
-                <button className="mt-4 clay-btn px-6 py-2 text-sm text-[#00ffff] flex items-center gap-2 hover:gap-3 transition-all">
-                  View Case Study <ExternalLink size={14}/>
-                </button>
+                <div className={`order-2 ${index % 2 === 0 ? 'md:order-2' : 'md:order-1'} space-y-4`}>
+                  <div className="text-[#00ffff] text-sm font-bold tracking-wider uppercase">{project.category}</div>
+                  <h3 className="text-3xl font-bold text-white">{project.title}</h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    {project.description}
+                  </p>
+
+                  {(project.problem || project.solution) && (
+                    <div className="mt-4 text-left">
+                      {project.problem && (
+                        <div className="mb-2">
+                          <div className="text-sm font-semibold text-[#00ffff]">Problem</div>
+                          <p className="text-gray-300 text-sm">{project.problem}</p>
+                        </div>
+                      )}
+                      {project.solution && (
+                        <div className="mb-2">
+                          <div className="text-sm font-semibold text-[#00ffff]">Solution</div>
+                          <p className="text-gray-300 text-sm">{project.solution}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {(project.tech || []).map((t: string) => (
+                      <span key={t} className="text-xs px-2 py-1 rounded border border-gray-700 text-gray-400">{t}</span>
+                    ))}
+                  </div>
+
+                  {project.projectLink ? (
+                    <a href={project.projectLink} target="_blank" rel="noreferrer" className="mt-4 inline-block clay-btn px-6 py-2 text-sm text-[#00ffff] flex items-center gap-2 hover:gap-3 transition-all">
+                      View Project <ExternalLink size={14}/>
+                    </a>
+                  ) : (
+                    <button className="mt-4 clay-btn px-6 py-2 text-sm text-[#00ffff] flex items-center gap-2 hover:gap-3 transition-all">
+                      View Case Study <ExternalLink size={14}/>
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -469,6 +576,26 @@ const WorkGallery = () => {
     }
   };
 
+  const [projects, setProjects] = useState<typeof initialProjects>(initialProjects);
+  const [loadingGallery, setLoadingGallery] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      setLoadingGallery(true);
+      try {
+        const data = await getGalleryProjects();
+        if (mounted && data && data.length > 0) {
+          setProjects(data as any);
+        }
+      } finally {
+        if (mounted) setLoadingGallery(false);
+      }
+    };
+    fetch();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div className="min-h-screen pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
@@ -477,36 +604,40 @@ const WorkGallery = () => {
           <p className="text-gray-400">Interactive 3D cards. Hover to explore depth.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {initialProjects.map((project) => (
-            <div 
-              key={project.id} 
-              className="h-80 w-full relative"
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-            >
-              <div className="tilt-inner w-full h-full clay-card p-6 flex flex-col justify-between transition-transform duration-100 ease-out transform-style-3d bg-[#1a1b1e]">
-                {/* Floating Content */}
-                <div className="relative z-20 transform translate-z-10">
-                  <div className="text-[#00ffff] text-xs font-bold mb-2">{project.category}</div>
-                  <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-                </div>
+        {loadingGallery ? (
+          <div className="text-center text-gray-400">Loading gallery...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {projects.map((project) => (
+              <div 
+                key={project.id} 
+                className="h-80 w-full relative"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div className="tilt-inner w-full h-full clay-card p-6 flex flex-col justify-between transition-transform duration-100 ease-out transform-style-3d bg-[#1a1b1e]">
+                  {/* Floating Content */}
+                  <div className="relative z-20 transform translate-z-10">
+                    <div className="text-[#00ffff] text-xs font-bold mb-2">{project.category}</div>
+                    <h3 className="text-2xl font-bold text-white">{project.title}</h3>
+                  </div>
 
-                <div className="absolute inset-0 rounded-2xl overflow-hidden z-0 opacity-30">
-                   <img src={project.image} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all" alt="" />
-                </div>
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden z-0 opacity-30">
+                     <img src={project.image} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all" alt="" />
+                  </div>
 
-                <div className="relative z-20 mt-auto">
-                  <div className="flex gap-2 flex-wrap">
-                     {project.tech.slice(0,3).map(t => (
-                       <span key={t} className="text-[10px] bg-black/50 px-2 py-1 rounded text-white backdrop-blur-sm">{t}</span>
-                     ))}
+                  <div className="relative z-20 mt-auto">
+                    <div className="flex gap-2 flex-wrap">
+                       {(project.tech || []).slice(0,3).map((t: string) => (
+                         <span key={t} className="text-[10px] bg-black/50 px-2 py-1 rounded text-white backdrop-blur-sm">{t}</span>
+                       ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -579,11 +710,11 @@ const ContactPage = () => {
           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 ml-2">Name</label>
-              <input type="text" className="clay-input w-full p-4" placeholder="John Doe" />
+              <input type="text" className="clay-input w-full p-4" placeholder="Tomiwa Ifeoluwa" />
             </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 ml-2">Email</label>
-              <input type="email" className="clay-input w-full p-4" placeholder="john@example.com" />
+              <input type="email" className="clay-input w-full p-4" placeholder="olusegunifetomiwa2000@gmail.com" />
             </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 ml-2">Message</label>
@@ -608,581 +739,42 @@ interface ProjectAdminProps {
   isCaseStudy?: boolean; // New prop to differentiate
 }
 
-const WorkGalleryAdmin = ({ projects, addProject, editProject, deleteProject }: ProjectAdminProps) => {
-  const [newProjectTitle, setNewProjectTitle] = useState("");
-  const [newProjectCategory, setNewProjectCategory] = useState("");
-  const [newProjectDescription, setNewProjectDescription] = useState("");
-  const [newProjectImage, setNewProjectImage] = useState("");
-  const [newProjectTech, setNewProjectTech] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-
-  const handleAddProject = () => {
-    if (newProjectTitle.trim() && newProjectCategory.trim()) {
-      addProject(
-        newProjectTitle, 
-        newProjectCategory, 
-        newProjectDescription || 'Draft project description...', 
-        newProjectImage || 'https://via.placeholder.com/400', 
-        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
-      );
-      setNewProjectTitle("");
-      setNewProjectCategory("");
-      setNewProjectDescription("");
-      setNewProjectImage("");
-      setNewProjectTech("");
-    }
-  };
-
-  const handleEditProject = (project: Project) => {
-    setEditingId(project.id);
-    setNewProjectTitle(project.title);
-    setNewProjectCategory(project.category);
-    setNewProjectDescription(project.description);
-    setNewProjectImage(project.image);
-    setNewProjectTech(project.tech.join(', '));
-  };
-
-  const handleSaveEdit = () => {
-    if (editingId !== null && newProjectTitle.trim() && newProjectCategory.trim()) {
-      editProject(
-        editingId, 
-        newProjectTitle, 
-        newProjectCategory, 
-        newProjectDescription, 
-        newProjectImage, 
-        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
-      );
-      setEditingId(null);
-      setNewProjectTitle("");
-      setNewProjectCategory("");
-      setNewProjectDescription("");
-      setNewProjectImage("");
-      setNewProjectTech("");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setNewProjectTitle("");
-    setNewProjectCategory("");
-    setNewProjectDescription("");
-    setNewProjectImage("");
-    setNewProjectTech("");
-  };
-
-  return (
-    <div className="clay-card p-6 mb-8">
-      <h4 className="text-xl font-bold text-white mb-4">Manage Work Gallery Projects</h4>
-      <div className="space-y-4">
-        {projects.map(p => (
-          <div key={p.id} className="flex justify-between items-center clay-card p-3">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden">
-                <img src={p.image} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <div className="text-white font-bold">{p.title}</div>
-                <div className="text-xs text-gray-500">@{p.category}</div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => handleEditProject(p)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
-                <Settings size={18} />
-              </button>
-              <button onClick={() => deleteProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 flex flex-col gap-3">
-        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Project" : "Add New Project"}</h5>
-        <input 
-          type="text" 
-          placeholder="Project Title" 
-          className="clay-input p-3"
-          value={newProjectTitle}
-          onChange={(e) => setNewProjectTitle(e.target.value)}
-        />
-        <input 
-          type="text" 
-          placeholder="Category" 
-          className="clay-input p-3"
-          value={newProjectCategory}
-          onChange={(e) => setNewProjectCategory(e.target.value)}
-        />
-        <textarea 
-          placeholder="Description" 
-          className="clay-input p-3 h-24 resize-none"
-          value={newProjectDescription}
-          onChange={(e) => setNewProjectDescription(e.target.value)}
-        ></textarea>
-        <input 
-          type="text" 
-          placeholder="Image URL" 
-          className="clay-input p-3"
-          value={newProjectImage}
-          onChange={(e) => setNewProjectImage(e.target.value)}
-        />
-        <input 
-          type="text" 
-          placeholder="Technologies (comma-separated)" 
-          className="clay-input p-3"
-          value={newProjectTech}
-          onChange={(e) => setNewProjectTech(e.target.value)}
-        />
-        {editingId ? (
-          <div className="flex gap-2">
-            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
-              <PlusCircle size={20} /> Save Changes
-            </button>
-            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button onClick={handleAddProject} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
-            <PlusCircle size={20} /> Add Project
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const CaseStudiesAdmin = ({ projects, addProject, editProject, deleteProject }: ProjectAdminProps) => {
-  const [newProjectTitle, setNewProjectTitle] = useState("");
-  const [newProjectCategory, setNewProjectCategory] = useState("");
-  const [newProjectDescription, setNewProjectDescription] = useState("");
-  const [newProjectImage, setNewProjectImage] = useState("");
-  const [newProjectTech, setNewProjectTech] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-
-  const handleAddProject = () => {
-    if (newProjectTitle.trim() && newProjectCategory.trim()) {
-      addProject(
-        newProjectTitle, 
-        newProjectCategory, 
-        newProjectDescription || 'Draft case study description...', 
-        newProjectImage || 'https://via.placeholder.com/400', 
-        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
-      );
-      setNewProjectTitle("");
-      setNewProjectCategory("");
-      setNewProjectDescription("");
-      setNewProjectImage("");
-      setNewProjectTech("");
-    }
-  };
-
-  const handleEditProject = (project: Project) => {
-    setEditingId(project.id);
-    setNewProjectTitle(project.title);
-    setNewProjectCategory(project.category);
-    setNewProjectDescription(project.description);
-    setNewProjectImage(project.image);
-    setNewProjectTech(project.tech.join(', '));
-  };
-
-  const handleSaveEdit = () => {
-    if (editingId !== null && newProjectTitle.trim() && newProjectCategory.trim()) {
-      editProject(
-        editingId, 
-        newProjectTitle, 
-        newProjectCategory, 
-        newProjectDescription, 
-        newProjectImage, 
-        newProjectTech.split(',').map(t => t.trim()).filter(t => t !== '')
-      );
-      setEditingId(null);
-      setNewProjectTitle("");
-      setNewProjectCategory("");
-      setNewProjectDescription("");
-      setNewProjectImage("");
-      setNewProjectTech("");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setNewProjectTitle("");
-    setNewProjectCategory("");
-    setNewProjectDescription("");
-    setNewProjectImage("");
-    setNewProjectTech("");
-  };
-
-  return (
-    <div className="clay-card p-6 mb-8">
-      <h4 className="text-xl font-bold text-white mb-4">Manage Case Studies</h4>
-      <div className="space-y-4">
-        {projects.map(p => (
-          <div key={p.id} className="flex justify-between items-center clay-card p-3">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden">
-                <img src={p.image} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <div className="text-white font-bold">{p.title}</div>
-                <div className="text-xs text-gray-500">@{p.category}</div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => handleEditProject(p)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
-                <Settings size={18} />
-              </button>
-              <button onClick={() => deleteProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 flex flex-col gap-3">
-        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Case Study" : "Add New Case Study"}</h5>
-        <input 
-          type="text" 
-          placeholder="Case Study Title" 
-          className="clay-input p-3"
-          value={newProjectTitle}
-          onChange={(e) => setNewProjectTitle(e.target.value)}
-        />
-        <input 
-          type="text" 
-          placeholder="Category" 
-          className="clay-input p-3"
-          value={newProjectCategory}
-          onChange={(e) => setNewProjectCategory(e.target.value)}
-        />
-        <textarea 
-          placeholder="Description" 
-          className="clay-input p-3 h-24 resize-none"
-          value={newProjectDescription}
-          onChange={(e) => setNewProjectDescription(e.target.value)}
-        ></textarea>
-        <input 
-          type="text" 
-          placeholder="Image URL" 
-          className="clay-input p-3"
-          value={newProjectImage}
-          onChange={(e) => setNewProjectImage(e.target.value)}
-        />
-        <input 
-          type="text" 
-          placeholder="Technologies (comma-separated)" 
-          className="clay-input p-3"
-          value={newProjectTech}
-          onChange={(e) => setNewProjectTech(e.target.value)}
-        />
-        {editingId ? (
-          <div className="flex gap-2">
-            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
-              <PlusCircle size={20} /> Save Changes
-            </button>
-            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button onClick={handleAddProject} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
-            <PlusCircle size={20} /> Add Case Study
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
+// Old admin components removed; now imported from src/admin.tsx with Supabase integration
 
 
-interface TestimonialsAdminProps {
-  testimonials: Testimonial[];
-  addTestimonial: (name: string, title: string, text: string, avatar?: string) => void;
-  editTestimonial: (id: number, newName: string, newTitle: string, newText: string, newAvatar?: string) => void;
-  deleteTestimonial: (id: number) => void;
-}
-
-const TestimonialsAdmin = ({ testimonials, addTestimonial, editTestimonial, deleteTestimonial }: TestimonialsAdminProps) => {
-  const [newTestimonialName, setNewTestimonialName] = useState("");
-  const [newTestimonialTitle, setNewTestimonialTitle] = useState("");
-  const [newTestimonialText, setNewTestimonialText] = useState("");
-  const [newTestimonialAvatar, setNewTestimonialAvatar] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-
-  const handleAddTestimonial = () => {
-    if (newTestimonialName.trim() && newTestimonialTitle.trim() && newTestimonialText.trim()) {
-      addTestimonial(newTestimonialName, newTestimonialTitle, newTestimonialText, newTestimonialAvatar || undefined);
-      setNewTestimonialName("");
-      setNewTestimonialTitle("");
-      setNewTestimonialText("");
-      setNewTestimonialAvatar("");
-    }
-  };
-
-  const handleEditTestimonial = (testimonial: Testimonial) => {
-    setEditingId(testimonial.id);
-    setNewTestimonialName(testimonial.name);
-    setNewTestimonialTitle(testimonial.title);
-    setNewTestimonialText(testimonial.text);
-    setNewTestimonialAvatar(testimonial.avatar || "");
-  };
-
-  const handleSaveEdit = () => {
-    if (editingId !== null && newTestimonialName.trim() && newTestimonialTitle.trim() && newTestimonialText.trim()) {
-      editTestimonial(editingId, newTestimonialName, newTestimonialTitle, newTestimonialText, newTestimonialAvatar || undefined);
-      setEditingId(null);
-      setNewTestimonialName("");
-      setNewTestimonialTitle("");
-      setNewTestimonialText("");
-      setNewTestimonialAvatar("");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setNewTestimonialName("");
-    setNewTestimonialTitle("");
-    setNewTestimonialText("");
-    setNewTestimonialAvatar("");
-  };
-
-  return (
-    <div className="clay-card p-6 mb-8">
-      <h4 className="text-xl font-bold text-white mb-4">Manage Testimonials</h4>
-      <div className="space-y-4">
-        {testimonials.map(t => (
-          <div key={t.id} className="flex justify-between items-center clay-card p-3">
-            <div>
-              <p className="text-white font-medium">{t.name} - <span className="text-gray-500">{t.title}</span></p>
-              <p className="text-gray-400 text-sm italic">"{t.text}"</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => handleEditTestimonial(t)} className="text-[#00ffff] p-2 hover:bg-[#00ffff]/10 rounded-full transition-colors">
-                <Settings size={18} />
-              </button>
-              <button onClick={() => deleteTestimonial(t.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-full transition-colors">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 flex flex-col gap-3">
-        <h5 className="text-lg font-bold text-white">{editingId ? "Edit Testimonial" : "Add New Testimonial"}</h5>
-        <input 
-          type="text" 
-          placeholder="Testimonial Name" 
-          className="clay-input p-3"
-          value={newTestimonialName}
-          onChange={(e) => setNewTestimonialName(e.target.value)}
-        />
-        <input 
-          type="text" 
-          placeholder="Testimonial Title (e.g., CEO, Company)" 
-          className="clay-input p-3"
-          value={newTestimonialTitle}
-          onChange={(e) => setNewTestimonialTitle(e.target.value)}
-        />
-        <textarea 
-          placeholder="Testimonial Text" 
-          className="clay-input p-3 h-24 resize-none"
-          value={newTestimonialText}
-          onChange={(e) => setNewTestimonialText(e.target.value)}
-        ></textarea>
-        <input 
-          type="text" 
-          placeholder="Avatar URL (optional)" 
-          className="clay-input p-3"
-          value={newTestimonialAvatar}
-          onChange={(e) => setNewTestimonialAvatar(e.target.value)}
-        />
-        {editingId ? (
-          <div className="flex gap-2">
-            <button onClick={handleSaveEdit} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2 flex-1">
-              <PlusCircle size={20} /> Save Changes
-            </button>
-            <button onClick={handleCancelEdit} className="clay-btn py-3 rounded-xl flex items-center justify-center gap-2 flex-1 text-gray-400 hover:text-white">
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button onClick={handleAddTestimonial} className="clay-btn-accent py-3 rounded-xl flex items-center justify-center gap-2">
-            <PlusCircle size={20} /> Add Testimonial
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
 
 
-const AdminPanel = () => {
-  return (
-    <div className="min-h-screen pt-32 pb-20 px-6">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl font-bold text-white mb-8 text-center">Admin Panel</h2>
-        <div className="text-gray-400 text-center mb-12">Manage your website content here.</div>
-
-        {/* WorkGalleryAdmin and CaseStudiesAdmin are rendered inside AdminDashboard now */}
-        {/* TestimonialsAdmin is rendered inside AdminDashboard now */}
-        {/* Add more admin sections as needed */}
-      </div>
-    </div>
-  );
-};
 
 
-const AdminDashboard = () => {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials); // New state for testimonials
-  const [activeAdminTab, setActiveAdminTab] = useState<'projects' | 'case_studies' | 'testimonials'>('projects');
-
-  const addProject = (title: string, category: string, description: string, image: string, tech: string[]) => {
-    setProjects([...projects, {
-      id: Date.now(),
-      title,
-      category,
-      description,
-      image,
-      tech
-    }]);
-  };
-
-  const editProject = (id: number, newTitle: string, newCategory: string, newDescription: string, newImage: string, newTech: string[]) => {
-    setProjects(projects.map(p => 
-      p.id === id ? { ...p, title: newTitle, category: newCategory, description: newDescription, image: newImage, tech: newTech } : p
-    ));
-  };
-
-  const deleteProject = (id: number) => {
-    setProjects(projects.filter(p => p.id !== id));
-  };
-
-  // Testimonial management functions
-  const addTestimonial = (name: string, title: string, text: string, avatar?: string) => {
-    setTestimonials([...testimonials, { id: Date.now(), name, title, text, avatar }]);
-  };
-
-  const editTestimonial = (id: number, newName: string, newTitle: string, newText: string, newAvatar?: string) => {
-    setTestimonials(testimonials.map(t => 
-      t.id === id ? { ...t, name: newName, title: newTitle, text: newText, avatar: newAvatar } : t
-    ));
-  };
-
-  const deleteTestimonial = (id: number) => {
-    setTestimonials(testimonials.filter(t => t.id !== id));
-  };
-
-
-  return (
-    <div className="min-h-screen pt-32 pb-20 px-6">
-       <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-white">Admin Dashboard</h2>
-            <div className="text-sm text-gray-500">Manage Content</div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Stats */}
-            <div className="clay-card p-6 text-center">
-              <div className="text-4xl font-bold text-[#00ffff] mb-2">{projects.length}</div>
-              <div className="text-gray-400 text-sm">Active Projects</div>
-            </div>
-            <div className="clay-card p-6 text-center">
-              <div className="text-4xl font-bold text-green-400 mb-2">{testimonials.length}</div>
-              <div className="text-gray-400 text-sm">Active Testimonials</div>
-            </div>
-             <div className="clay-card p-6 text-center">
-              <div className="text-4xl font-bold text-purple-400 mb-2">854</div>
-              <div className="text-gray-400 text-sm">Visits</div>
-            </div>
-          </div>
-
-          <div className="mt-12">
-            <h3 className="text-xl font-bold text-white mb-6">Content Management</h3>
-            
-            <div className="flex space-x-4 mb-8">
-              <button
-                onClick={() => setActiveAdminTab('projects')}
-                className={`clay-btn px-6 py-2 ${activeAdminTab === 'projects' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
-              >
-                Work Gallery
-              </button>
-              <button
-                onClick={() => setActiveAdminTab('case_studies')}
-                className={`clay-btn px-6 py-2 ${activeAdminTab === 'case_studies' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
-              >
-                Case Studies
-              </button>
-              <button
-                onClick={() => setActiveAdminTab('testimonials')}
-                className={`clay-btn px-6 py-2 ${activeAdminTab === 'testimonials' ? 'bg-[#00ffff]/20 text-[#00ffff]' : 'text-gray-400 hover:text-white'}`}
-              >
-                Testimonials
-              </button>
-            </div>
-
-            {activeAdminTab === 'projects' && (
-              <WorkGalleryAdmin 
-                projects={projects}
-                addProject={addProject}
-                editProject={editProject}
-                deleteProject={deleteProject}
-              />
-            )}
-
-            {activeAdminTab === 'case_studies' && 
-              <CaseStudiesAdmin 
-                projects={projects} // Assuming case studies are also of type Project[]
-                addProject={addProject}
-                editProject={editProject}
-                deleteProject={deleteProject}
-              />
-            }
-            {activeAdminTab === 'testimonials' && 
-              <TestimonialsAdmin 
-                testimonials={testimonials}
-                addTestimonial={addTestimonial}
-                editTestimonial={editTestimonial}
-                deleteTestimonial={deleteTestimonial}
-              />
-            }
-
-          </div>
-       </div>
-    </div>
-  );
-};
+// Old AdminPanel and AdminDashboard components removed; now imported from src/admin.tsx
+// which connects directly to Supabase for CRUD operations.
 
 
 // --- Main App ---
 
 const App = () => {
-  const [activeSection, setActiveSection] = useState<Section>("home");
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activeSection]);
-
   return (
     <div className="min-h-screen text-gray-100 font-sans selection:bg-[#00ffff] selection:text-black">
       <FloatingShapes />
       
-      <Navigation activeSection={activeSection} setSection={setActiveSection} />
+      <Navigation />
 
       <main className="relative z-10 transition-opacity duration-500">
-        {activeSection === "home" && <HomePage setSection={setActiveSection} />}
-        {activeSection === "about" && <AboutPage />}
-        {activeSection === "services" && <ServicesPage />}
-        {activeSection === "casestudies" && <CaseStudiesPage />}
-        {activeSection === "work" && <WorkGallery />}
-        {activeSection === "testimonials" && <TestimonialsPage />} {/* Render TestimonialsPage */}
-        {activeSection === "contact" && <ContactPage />}
-        {activeSection === "admin" && <AdminDashboard />} {/* Render AdminDashboard */}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/case-studies" element={<CaseStudiesPage />} />
+          <Route path="/work" element={<WorkGallery />} />
+          <Route path="/testimonials" element={<TestimonialsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        </Routes>
       </main>
 
       <footer className="relative z-10 py-8 text-center text-gray-600 text-sm">
-        <p>© {new Date().getFullYear()} Olusegun Ifetomiwa.</p>
+        <p>© {new Date().getFullYear()} Olusegun Ifeoluwa Tomiwa.</p>
       </footer>
     </div>
   );
@@ -1191,5 +783,71 @@ const App = () => {
 const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
-  root.render(<App />);
+  root.render(
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
 }
+
+// ProtectedRoute component: enforces Supabase authentication only (no email allowlist)
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        // Only check if session exists; no email allowlist
+        setIsAuthenticated(!!data?.session);
+        if (!data?.session) {
+          navigate('/login');
+        }
+      } catch (err) {
+        if (mounted) {
+          setIsAuthenticated(false);
+          navigate('/login');
+        }
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setIsAuthenticated(!!session);
+        if (!session) {
+          navigate('/login');
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      try { listener.subscription.unsubscribe(); } catch (e) {}
+    };
+  }, [navigate]);
+
+  // While checking auth, show loading
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0f1012]">
+        <div className="clay-card p-8 text-center space-y-4">
+          <div className="animate-pulse text-gray-300">Checking authentication…</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Only render children if authenticated
+  if (!isAuthenticated) {
+    return null; // Already navigated to /login in useEffect
+  }
+
+  return <>{children}</>;
+};
